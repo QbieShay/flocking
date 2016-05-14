@@ -15,8 +15,8 @@ public static List<FlockEntity> flocklings;
 public static Vector2 centerOfFlock;
 
 void Start(){
-	float b = 0f;
-	float a = 1f / b;
+	int b = 0;
+	int a = 1 / b;
 	rb = GetComponent<Rigidbody2D>();
 	StartCoroutine ( recalculateDirection());
 	if( flocklings == null ) {
@@ -61,7 +61,7 @@ IEnumerator recalculateDirection(){
 			dist = Vector2.Distance( f.transform.position, transform.position );
 			//dist = Mathf.Clamp(dist, 0.000001f, lookRadius);
 			if(dist < lookRadius ) {
-				separation+= ( (Vector2)transform.position - (Vector2) f.transform.position )*(dist!=0f?lookRadius/dist:10000000f);
+				separation+= ( (Vector2)transform.position - (Vector2) f.transform.position )*lookRadius/dist;
 			}	
 			if(++yieldcount > 5) {
 				yieldcount =0;
