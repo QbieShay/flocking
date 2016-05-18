@@ -1,12 +1,13 @@
 using UnityEngine;
 using System.Collections;
 namespace Flock{
-	class Boid : MonoBehaviour{
+	class Boid3D : MonoBehaviour{
 		public FlockGlobals FLOCKGLOB;
-		Vector2 velocity;
-		Vector2? target;
-		public static float speed = 3f;
-		public static float rotationSpeed = 10f;
+		Vector3 velocity;
+		Vector3? target;
+		public static float speed = 5f;
+		public static float rotationSpeed = 50f;
+
 
 		public void Start() {
 			FLOCKGLOB = FlockGlobals.instance;
@@ -16,52 +17,52 @@ namespace Flock{
 		public void Update() {
 			if(Input.GetKeyDown(KeyCode.Mouse0)){
 				if(Random.Range(0f,1f)<0.5f){
-					GetComponent<SpriteRenderer>().material.color = Color.red;
-					target = Camera.main.ScreenToWorldPoint( Input.mousePosition );
+					GetComponent<Renderer>().material.color = Color.red;
+					target = FLOCKGLOB.FLOCK_TARGET.transform.position;
 				}
 				else{
-					GetComponent<SpriteRenderer>().material.color = Color.white;
+					GetComponent<Renderer>().material.color = Color.white;
 					target = null;
 				}
 			}
 
-			//float angle = Vector3.Angle( transform.up, dir);
-			//if( Vector2.Dot(transform.up,dir)<0f ) angle = 180f-angle;
+			//float angle = Vector3.Angle( transform.forward, dir);
+			//if( Vector3.Dot(transform.forward,dir)<0f ) angle = 180f-angle;
 			//Debug.Log( "Desired direction for flockling is "+dir );
-			//transform.Rotate( Vector3.Cross(transform.up, dir) ,angle*rotationSpeed*3f*Time.deltaTime );
-			//transform.Translate( transform.up*speed*Time.deltaTime);
+			//transform.Rotate( Vector3.Cross(transform.forward, dir) ,angle*rotationSpeed*3f*Time.deltaTime );
+			//transform.Translate( transform.forward*speed*Time.deltaTime);
 			transform.position += (Vector3)dir*speed*Time.deltaTime;
-			transform.up = Vector2.Lerp(dir,transform.up, 0.5f*Time.deltaTime);
+			transform.forward = Vector3.Lerp(dir,transform.forward, 0.5f*Time.deltaTime);
 
 		}
-		Vector2 dir;
+		Vector3 dir;
 
 		IEnumerator recalculateDirection(){
 			while(true){
 				//Collider2D[] flocklings = Physics2D.OverlapCircleAll(transform.position, FLOCKGLOB.SIGHT_RADIUS, 
 				//LayerMask.NameToLayer("Flocklings"));
-				Collider2D[] flocklings = Physics2D.OverlapCircleAll( transform.position, FLOCKGLOB.SIGHT_RADIUS);
-				Vector2 position = (Vector2)transform.position, tmp;
-				Vector2 align=Vector2.zero, cohesion=position, separation=Vector2.zero;
+				Collider[] flocklings = Physics.OverlapSphere( transform.position, FLOCKGLOB.SIGHT_RADIUS);
+				Vector3 position = (Vector3)transform.position, tmp;
+				Vector3 align=Vector3.zero, cohesion=position, separation=Vector3.zero;
 				float scale = (float)flocklings.Length -1f;
 				int count = 0;
-				foreach (Collider2D c in flocklings ) {
-					tmp = position - (Vector2) c.transform.position;
+				foreach (Collider c in flocklings ) {
+					tmp = position - (Vector3) c.transform.position;
 					if(c.gameObject.tag != "Flockling" 
-							|| Vector2.Dot(transform.up,-(tmp.normalized))<FLOCKGLOB.VISION_ANGLE 
+							|| Vector3.Dot(transform.forward,-(tmp.normalized))<FLOCKGLOB.VISION_ANGLE 
 							) 
 						continue;
-					align +=(Vector2) c.transform.up;
-					if (position!=(Vector2)c.transform.position){
+					align +=(Vector3) c.transform.forward;
+					if (position!=(Vector3)c.transform.position){
 						separation += tmp.normalized/tmp.magnitude;
 					}
-					cohesion += (Vector2)c.transform.position;
+					cohesion += (Vector3)c.transform.position;
 					++count;
 				}
-				Vector2 center;
+				Vector3 center;
 				scale = Mathf.Clamp( scale, 1f, float.PositiveInfinity);
 				scale = (float)count;
-				center = (Vector2)cohesion/scale;
+				center = (Vector3)cohesion/scale;
 				align/=scale;
 				//Debug.Log("Count "+count);
 				//Debug.Log("Align: " + align);

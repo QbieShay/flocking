@@ -1,0 +1,54 @@
+using UnityEngine;
+using System.Collections;
+namespace Flock{
+	class Boid : MonoBehaviour{
+
+		public static float SIGHT_RADIUS = 5f;
+		public static float ALIGNMENT =  1f;
+		public static float COHESION   = 1f;
+		public static float SEPARATION   = 1f;
+
+		Vector2 velocity;
+		Vector2 target;
+		public static float speed = 3f;
+		public static float rotationSpeed = 10f;
+
+		public void Start() {
+			StartCoroutine( recalculateDirection());
+		} 
+		public void Update() {
+			if(Input.GetKey(KeyCode.Mouse0)){
+				target = Camera.main.ScreenToWorldPoint( Input.mousePosition );
+			}
+
+			float angle = Vector3.Angle( transform.up, dir);
+			Debug.Log( "Angle is " + angle );
+			transform.Rotate( new Vector3 ( 0,0,1 ) ,angle*rotationSpeed*Time.deltaTime );
+			transform.position += transform.up*speed*Time.deltaTime;
+		}
+		Vector2 dir;
+
+		IEnumerator recalculateDirection(){
+			while(true){
+				Collider2D[] flocklings = Physics2D.OverlapCircleAll(transform.position, SIGHT_RADIUS, LayerMask.NameToLayer("Flocklings"));
+				Vector2 position = (Vector2)transform.position, tmp;
+				Vector2 align=Vector2.zero, cohesion=position, separation=Vector2.zero;
+				foreach (Collider2D c in flocklings ) {
+					align +=(Vector2) c.transform.up;
+					tmp =position - (Vector2) c.transform.position;
+					separation += tmp.normalized/tmp.magnitude;
+					cohesion += (Vector2)c.transform.position;
+				}
+				Vector2 center = (Vector2)cohesion/(float)flocklings.Length; 
+				dir = ALIGNMENT*align/(float)flocklings.Length
+					+ SEPARATION*separation
+					+ COHESION*(center -position);
+
+
+				dir.Normalize();
+				dir += (target - center).normalized;
+				dir /= 2f;
+				Debug.DrawLine( transform.position, transform.position+ (Vector3) dir*4f);
+				yield return null;}
+		}
+	}}

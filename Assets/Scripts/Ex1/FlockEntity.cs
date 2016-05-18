@@ -57,10 +57,12 @@ IEnumerator recalculateDirection(){
 			yield return null;
 		}
 		foreach(FlockEntity f in flocklings){
-			centerOfFlock += (Vector2)f.transform.position;
+			
 			dist = Vector2.Distance( f.transform.position, transform.position );
 			//dist = Mathf.Clamp(dist, 0.000001f, lookRadius);
 			if(dist < lookRadius ) {
+				neighbours++;
+				centerOfFlock += (Vector2)f.transform.position;
 				separation+= ( (Vector2)transform.position - (Vector2) f.transform.position )*(dist!=0f?lookRadius/dist:10000000f);
 			}	
 			if(++yieldcount > 5) {
@@ -68,11 +70,11 @@ IEnumerator recalculateDirection(){
 				yield return null;
 			}
 		}
-		centerOfFlock/= (float)flocklings.Count;
+		centerOfFlock/= (float)neighbours;
 		cohesion = (Vector2) centerOfFlock - (Vector2) transform.position;
 		targetOrientation = (Vector2)(separation + 0.3f*cohesion+ ((Vector2) target - 0.7f*(Vector2)transform.position)).normalized;
-		yield return new WaitForSeconds(UnityEngine.Random.Range(0f,0.3f));
-		//yield return null;
+		//yield return new WaitForSeconds(UnityEngine.Random.Range(0f,0.3f));
+		yield return null;
 	}
 }
 
