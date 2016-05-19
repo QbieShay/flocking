@@ -6,21 +6,25 @@ class CraigBoids: MonoBehaviour{
 	Vector3 target;
 	float tooClose;
 	FlockGlobals FLOCKGLOB;
-	Vector3 dir;
+	Vector3 dir ;
 
 	void Start(){
 		FLOCKGLOB = FlockGlobals.instance;
 		StartCoroutine(flock());
+		dir = transform.forward;
 	}
 
 	void Update(){
-		target = FLOCKGLOB.FLOCK_TARGET.transform.position;
-		transform.forward = dir;
-		transform.position += transform.forward*FLOCKGLOB.SPEED*Time.deltaTime;
+		//transform.forward = dir;
+		//transform.position += transform.forward*FLOCKGLOB.SPEED*Time.deltaTime;
+		transform.rotation = Quaternion.LookRotation(Vector3.RotateTowards(
+					transform.forward , dir, FLOCKGLOB.ROTATIONSPEED*Time.deltaTime, 0.0f ));
+		transform.Translate( transform.forward * FLOCKGLOB.SPEED * Time.deltaTime);
 	}
 
 	public IEnumerator flock(){
 		while (true){
+			target = FLOCKGLOB.FLOCK_TARGET.transform.position;
 			Vector3 tmp= Vector3.zero, tmpdir= Vector3.zero;
 			Collider[] neighbours = Physics.OverlapSphere(transform.position,FLOCKGLOB.SIGHT_RADIUS
 					//,(LayerMask)gameObject.layer 
@@ -34,9 +38,9 @@ class CraigBoids: MonoBehaviour{
 			tmp.Normalize();
 			tmpdir = target- transform.position;
 			tmpdir.Normalize();
-			dir = (1f - tooClose/FLOCKGLOB.SIGHT_RADIUS) * tmp + (tooClose/FLOCKGLOB.SIGHT_RADIUS)*tmpdir;
-			Debug.Log("dir = " + (1f-tooClose/FLOCKGLOB.SIGHT_RADIUS) +" * "+tmp+" + "+tooClose/FLOCKGLOB.SIGHT_RADIUS+
-					" * "+tmpdir+" = "+dir);
+			dir = Mathf.Clamp((1f - tooClose/FLOCKGLOB.SIGHT_RADIUS),0.0f,0.6f) * tmp +
+			   	Mathf.Clamp((tooClose/FLOCKGLOB.SIGHT_RADIUS),0.4f,0.8f)*tmpdir;
+			 
 			dir.Normalize();
 			yield return null;
 		}
@@ -79,8 +83,8 @@ class CraigBoids: MonoBehaviour{
 			   	continue;
 			tmp = (transform.position - c.gameObject.transform.position);
 			tooClose = tmp.magnitude<tooClose?tmp.magnitude:tooClose;
-			Debug.Log("tooClose = "+tooClose);
-			separation+= tmp.normalized / tmp.magnitude;
+			
+			separation+= tmp.normalized / Mathf.Clamp(tmp.magnitude,0.0001f, float.PositiveInfinity);
 		}
 
 		return separation.normalized;

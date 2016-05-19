@@ -11,6 +11,7 @@ class FlockGlobals:MonoBehaviour{
 		[Range(-1f, 1f)]
 		public 	float VISION_ANGLE = -0.7f;
 		public  float SPEED = 10f;
+		public float ROTATIONSPEED = 5f;
 		public GameObject FLOCK_TARGET ;
 
 	void Awake(){
