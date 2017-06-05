@@ -15,8 +15,7 @@ class CraigBoids: MonoBehaviour{
 	}
 
 	void Update(){
-		//transform.forward = dir;
-		//transform.position += transform.forward*FLOCKGLOB.SPEED*Time.deltaTime;
+		//Move toward calculated direction
 		transform.rotation = Quaternion.LookRotation(Vector3.RotateTowards(
 					transform.forward , dir, FLOCKGLOB.ROTATIONSPEED*Time.deltaTime, 0.0f ));
 		transform.Translate( transform.forward * FLOCKGLOB.SPEED * Time.deltaTime);
@@ -27,7 +26,6 @@ class CraigBoids: MonoBehaviour{
 			target = FLOCKGLOB.FLOCK_TARGET.transform.position;
 			Vector3 tmp= Vector3.zero, tmpdir= Vector3.zero;
 			Collider[] neighbours = Physics.OverlapSphere(transform.position,FLOCKGLOB.SIGHT_RADIUS
-					//,(LayerMask)gameObject.layer 
 					);
 			tooClose = FLOCKGLOB.SIGHT_RADIUS ;
 			tmp += alignment(neighbours);
@@ -38,13 +36,14 @@ class CraigBoids: MonoBehaviour{
 			tmp.Normalize();
 			tmpdir = target- transform.position;
 			tmpdir.Normalize();
+			//The nearer the closer boid, the greater the flock component factor.
 			dir = Mathf.Clamp((1f - tooClose/FLOCKGLOB.SIGHT_RADIUS),0.0f,0.6f) * tmp +
 			   	Mathf.Clamp((tooClose/FLOCKGLOB.SIGHT_RADIUS),0.4f,0.8f)*tmpdir;
-			 
+			//The two component are clamped because, otherwise, if the flocklings 
+			//are too close to one another they will ignore the target
 			dir.Normalize();
 			yield return null;
 		}
-		//TODO weight target vs flock
 	}
 
 	Vector3 alignment(Collider[] neighbours){
